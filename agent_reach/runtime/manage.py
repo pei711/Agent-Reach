@@ -964,7 +964,7 @@ def configure(key: str, value: str) -> dict:
     if not value:
         raise ReachError(BAD_INPUT, "empty value")
     if key == "browser-port":
-        if not value.isdigit() or not 1024 <= int(value) <= 65535:
+        if not (value.isascii() and value.isdigit()) or not 1024 <= int(value) <= 65535:
             raise ReachError(BAD_INPUT, "browser-port must be a number from 1024 to 65535")
         from . import browser
 

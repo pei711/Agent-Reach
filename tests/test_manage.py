@@ -739,7 +739,7 @@ def test_configure_browser_port_moves_the_dedicated_browser(env, monkeypatch):
     from agent_reach.runtime import browser
 
     assert browser.configured_port() == browser.DEFAULT_CDP_PORT
-    for bad in ("80", "70000", "abc", "9333x"):
+    for bad in ("80", "70000", "abc", "9333x", "9²"):
         with pytest.raises(ReachError):
             manage.configure("browser-port", bad)
     stopped = []
