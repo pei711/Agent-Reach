@@ -11,11 +11,14 @@ import urllib.request
 from pathlib import Path
 from typing import Mapping, Optional, Sequence
 
+from agent_reach import __version__
 from agent_reach.utils.process import utf8_subprocess_env
 
 from .result import NEED_SETUP, TIMEOUT, ReachError, _clean
 
 _DEFAULT_MAX_BYTES = 8 * 1024 * 1024
+# Some fronts (Exa's Cloudflare) block the default Python-urllib agent (error 1010).
+_USER_AGENT = f"agent-reach/{__version__}"
 
 
 class CommandFailed(ReachError):
@@ -117,7 +120,7 @@ def http_request(
     max_bytes: int = _DEFAULT_MAX_BYTES,
 ) -> bytes:
     """GET (or POST when `data` is given) with a size cap. Errors propagate to classify()."""
-    merged = {"User-Agent": "agent-reach"}
+    merged = {"User-Agent": _USER_AGENT}
     merged.update(headers or {})
     req = urllib.request.Request(url, data=data, headers=merged)
     with urllib.request.urlopen(req, timeout=max(timeout, 0.1)) as resp:
