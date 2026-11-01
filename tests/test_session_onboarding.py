@@ -168,6 +168,20 @@ def test_unavailable_source_keeps_saved_destination_and_does_not_open_login(monk
     assert result['source']=='saved-profile' and result['copied_cookies']==0
 
 
+def test_explicit_import_without_a_source_login_fails_and_keeps_saved_state(monkeypatch):
+    from agent_reach.runtime import bridge, session_reuse
+    saved = {'source': 'daily', 'copied_cookies': 3, 'cookie_snapshot': 1, 'at': state.now()}
+    state.mutate(lambda data: data.setdefault('session_reuse', {}).__setitem__('xiaohongshu', saved))
+    monkeypatch.setattr(browser, 'ensure_running', lambda: None)
+    monkeypatch.setattr(bridge, 'require_running', lambda: {'ok': True})
+    monkeypatch.setattr(session_reuse, '_source_cookies', lambda *a: ([], 'saved-profile'))
+    monkeypatch.setattr(cdp, 'call', lambda *a, **k: pytest.fail('changed saved session'))
+    with pytest.raises(ReachError) as caught:
+        session_reuse.prepare('xiaohongshu', force=True)
+    assert caught.value.code == 'NEED_SETUP'
+    assert state.load()['session_reuse']['xiaohongshu'] == saved
+
+
 def test_missing_bridge_is_not_recorded_as_an_empty_site_session(monkeypatch):
     from agent_reach.runtime import bridge, session_reuse
 

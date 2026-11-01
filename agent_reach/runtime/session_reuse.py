@@ -106,6 +106,10 @@ def prepare(channel: str, *, force: bool = False) -> dict:
         # CLI sessions. A browser-backed action still needs it before recording
         # discovery as a successful (possibly empty) site snapshot.
         bridge.require_running()
+        if force and not cookies:
+            # An explicit import that found no login must not report success.
+            raise ReachError(NEED_SETUP, "No local browser login was found for this site; nothing was copied",
+                             hint=f"Run agent-reach browser profiles to check the source browser, or agent-reach login {channel}.")
         if cookies:
             current = cdp.call("Storage.getCookies")
             if current is None:
